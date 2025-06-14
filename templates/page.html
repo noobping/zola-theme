@@ -1,0 +1,31 @@
+{%- extends "base.html" -%}
+
+{%- block title -%}
+  {%- if page.title -%}
+    {{ page.title | replace(from="-", to=" ") }}
+  {%- else -%}
+    {{ page.slug | replace(from="-", to=" ") }}
+  {%- endif -%}
+{%- endblock title -%}
+
+{%- block content -%}
+{%- set slug = page.title | default(value=page.components | last) -%}
+<header>
+  <h1>
+    {{ slug | replace(from="-", to=" ") }}
+  </h1>
+</header>
+
+{%- set pre = page.content
+  | safe
+  | replace(from="/" ~ slug ~ "/", to="/")
+  | replace(from="./", to="")
+  | lower
+-%}
+<main>
+  {{ pre | markdown | safe }}
+</main>
+
+{%- include "partials/_footer.html" -%}
+
+{%- endblock content -%}

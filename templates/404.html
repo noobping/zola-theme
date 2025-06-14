@@ -1,0 +1,15 @@
+{%- extends "base.html" -%}
+
+{%- block content -%}
+<header>
+    <h1>{{ config.extra.not_found | default(value="404") }}</h1>
+    <p>{{ config.extra.not_found_subtitle | default(value="Page Not Found") }}</p>
+</header>
+
+<main>
+    <p>{{ config.extra.not_found_description | default(value="Sorry, the page you are looking for does not exist. It may have been removed, had its name changed, or is temporarily unavailable.") | safe }}</p>
+</main>
+
+{%- include "partials/_copy.html" -%}
+
+{%- endblock content -%}

@@ -1,0 +1,18 @@
+<footer>
+    {% if config.extra.share %}
+    <div class="share">
+        {%- set share_page = get_page(path="_share.md") -%}
+        {{ share_page.content | replace(from="+", to="#")  | regex_replace(pattern='href="[^"]*#share[^"]*"', rep='href="#share"') | safe }}
+    </div>
+    {% endif %}
+
+    {%- include "partials/_copy.html" -%}
+
+    {% if config.extra.footer %}
+    {{ config.extra.footer | markdown | safe }}
+    {% endif %}
+
+    {% if config.extra.badge %}
+    {{ config.extra.badge | markdown | safe }}
+    {% endif %}
+</footer>

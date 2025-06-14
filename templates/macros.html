@@ -1,0 +1,20 @@
+{%- macro breadcrumb(path) -%}
+  {%- if path and path | length > 0 -%}
+    <nav aria-label="breadcrumb">
+      <a href="{{ get_url(path="/") }}">{{ config.title }}</a>
+      {%- for elt in path -%}
+        {%- set idx   = loop.index0 + 1 -%}
+        {%- set segs  = path | slice(end=idx) -%}
+        {%- set joined = segs | join(sep="/") -%}
+        {%- set link  = "/" ~ joined ~ "/" -%}
+        {%- if loop.last -%}
+          &nbsp;/&nbsp;<b>{{ elt | replace(from="-", to=" ") }}</b>
+        {%- else -%}
+          &nbsp;/&nbsp;<a href="{{ get_url(path=link) }}">{{ elt | replace(from="-", to=" ") }}</a>
+        {%- endif -%}
+      {%- endfor -%}
+
+      {%- include "partials/_search.html" -%}
+    </nav>
+  {%- endif -%}
+{%- endmacro -%}

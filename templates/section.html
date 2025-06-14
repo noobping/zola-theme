@@ -1,0 +1,49 @@
+{%- extends "base.html" -%}
+
+{%- block title -%}
+  {{ section.title | default(value=section.components | last | replace(from="-", to=" ")) }}
+{%- endblock title -%}
+
+{%- block content -%}
+<header>
+  <h1>
+    {{ section.title | default(value=section.components | last | replace(from="-", to=" ")) }}
+  </h1>
+</header>
+<main>
+  {%- if section.subsections | length > 0 -%}
+  <section>
+    <h2>{{ config.extra.categories | default(value="categories") }}</h2>
+    <ul>
+      {%- for sub_path in section.subsections -%}
+        {%- set sub = get_section(path=sub_path) -%}
+        <li>
+          <a href="{{ get_url(path=sub.path) }}">
+            {{ sub.title | default(value=sub.components | last | replace(from="-", to=" ")) }}
+            <span>{{ sub.pages | length }} {{ config.extra.posts | default(value="posts") }}</span>
+          </a>
+        </li>
+      {%- endfor -%}
+    </ul>
+  </section>
+  {%- endif -%}
+
+  {%- if section.pages | length > 0 -%}
+  <section>
+    <h2>{{ config.extra.posts | default(value="posts") }}</h2>
+    <ul>
+      {%- for p in section.pages -%}
+        <li>
+          <a href="{{ get_url(path=p.path) }}">
+            {{ p.title | default(value=p.slug | replace(from="-", to=" ")) }}
+          </a>
+        </li>
+      {%- endfor -%}
+    </ul>
+  </section>
+  {%- endif -%}
+</main>
+
+{%- include "partials/_copy.html" -%}
+
+{%- endblock content -%}

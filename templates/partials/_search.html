@@ -1,0 +1,12 @@
+{%- if config.build_search_index -%}
+    {%- if config.extra.search -%}
+        {%- set search = "/" ~ config.extra.search ~ "/" -%}
+        <form action="{{ get_url(path=search) }}" method="get">
+    {%- else -%}
+        <form action="{{ get_url(path="/search/") }}" method="get">
+    {%- endif -%}
+        <input id="search" type="text" name="q" placeholder="search" aria-label="Zoek">
+    </form>
+
+    <script src="{{ get_url(path='/js/search-query.js') }}"></script>
+{%- endif -%}

@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block content %}
+
+<header>
+    <h1>{{ page.title }}</h1>
+</header>
+
+<main>
+    {{ page.content | safe }}
+
+    <noscript>
+        <p>{{ config.extra.search_noscript | default(value="JavaScript is disabled in your browser. Please enable JavaScript to use the search functionality.") | safe }}</p>
+    </noscript>
+
+    <ul id="search-results"></ul>
+</main>
+
+<script src="{{ get_url(path='/elasticlunr.min.js') }}"></script>
+<script src="{{ get_url(path='/search_index.en.js') }}"></script>
+<script src="{{ get_url(path='/js/search-results.js') }}"></script>
+
+{%- include "partials/_copy.html" -%}
+
+{% endblock content %}

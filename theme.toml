@@ -1,0 +1,10 @@
+name = "noobping"
+description = "A minimalistic theme for Zola static site generator. It uses the file names as titles and the folder for the menu structure. The theme is designed to be simple and easy to use, with a focus on content."
+license = "MIT"
+homepage = "https://github.com/noobping/zola-theme"
+min_version = "0.20.0"
+
+# The theme author info: you!
+[author]
+name = "Nick"
+homepage = "https://noobping.dev"

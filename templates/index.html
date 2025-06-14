@@ -1,0 +1,36 @@
+{%- extends "base.html" -%}
+
+{%- block content -%}
+<nav>
+    <b>{{ config.title }}</b> |
+    {%- for sub_path in section.subsections -%}
+        {%- set sub = get_section(path=sub_path) -%}
+        <a href="{{ get_url(path=sub.path) }}">
+            {{ sub.title | default(value=sub.components | last | replace(from="-", to=" ")) }}
+        </a>
+        {%- if not loop.last %} | {% endif %}
+    {%- endfor -%}
+
+    {%- for page in section.pages -%}
+        {%- set fname = page.relative_path | split(pat="/") | last -%}
+        {%- set base  = fname | replace(from=".md", to="") -%}
+
+        {%- if not page.title and not (base is starting_with("_")) -%}
+        | <a href="{{ page.permalink }}">{{ base | replace(from="-", to=" ") }}</a>
+        {%- endif -%}
+    {%- endfor -%}
+
+    {%- include "partials/_search.html" -%}
+</nav>
+
+<header>
+    <h1 class="title">{{ config.title }}</h1>
+</header>
+
+<main>
+    {{ section.content | safe }}
+</main>
+
+{%- include "partials/_footer.html" -%}
+
+{%- endblock content -%}

@@ -1,0 +1,61 @@
+{%- import "macros.html" as macros -%}
+
+<!DOCTYPE html>
+
+{%- if config.extra.language -%}
+    <html lang="{{ config.extra.language }}">
+{%- else -%}
+    {%- if config.default_language -%}
+        <html lang="{{ config.default_language }}">
+    {%- else -%}
+        <html lang="en">
+    {%- endif -%}
+{%- endif -%}
+
+<head>
+    <meta charset="utf-8">
+    <title>{%- block title -%}{{ config.title }}{%- endblock title -%}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="{{ get_url(path="favicon.ico") }}" type="image/x-icon">
+    <link rel="stylesheet" href="{{ get_url(path="css/style.css") }}">
+    <meta http-equiv="Cache-Control" content="public, max-age=7776000" />
+    <meta name="author" content="{{ config.author }}">
+    <meta name="description" content="{{ config.description }}" />
+
+    {%- if config.extra.keywords -%}
+    <meta name="keywords" content="{{ config.extra.keywords }}">
+    {%- endif -%}
+
+    {% block rss %}
+    <link rel="alternate" type="application/atom+xml" title="{{ config.title }}" href="{{ get_url(path='atom.xml', trailing_slash=false) }}">
+    {% endblock %}
+
+    {%- if config.extra.webapp -%}
+    <meta name="theme-color" content="{{ config.extra.theme_color }}" />
+    <meta name="mobile-web-app-status-bar-style" content="{{ config.extra.theme_color }}" />
+    <meta name="application-name" content="{{ config.title }}">
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-title" content="{{ config.title }}" />
+    <link rel="manifest" href="{{ get_url(path="manifest.json") }}">
+    <script>
+        if ('serviceWorker' in navigator) {
+        navigator.serviceWorker
+            .register("{{ get_url(path='js/service-worker.js', trailing_slash=false) }}")
+            .then(reg => console.log('SW registered:', reg.scope))
+            .catch(err => console.error('SW failed:', err));
+        }
+    </script>
+    {%- endif -%}
+</head>
+
+<body>
+    {%- set comps = page.components | default(value=section.components | default(value=[])) -%}
+    {{ macros::breadcrumb(path=comps) }}
+
+    {%- block content -%}{%- endblock content -%}
+
+    {%- if config.extra.share -%}
+    <script src="{{ config.base_url }}/js/share.js" defer></script>
+    {%- endif -%}
+</body>
+</html>
