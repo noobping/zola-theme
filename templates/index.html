@@ -2,13 +2,13 @@
 
 {%- block content -%}
 <nav>
-    <b>{{ config.title }}</b> |
+    <b>{{ config.title }}</b>
     {%- for sub_path in section.subsections -%}
         {%- set sub = get_section(path=sub_path) -%}
-        <a href="{{ get_url(path=sub.path) }}">
+        | <a href="{{ get_url(path=sub.path) }}">
             {{ sub.title | default(value=sub.components | last | replace(from="-", to=" ")) }}
         </a>
-        {%- if not loop.last %} | {% endif %}
+        {%- if not loop.last %} {% endif %}
     {%- endfor -%}
 
     {%- for page in section.pages -%}
