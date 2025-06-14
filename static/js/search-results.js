@@ -1,8 +1,8 @@
 function titleFromUrl(url) {
     const u = new URL(url, window.location.origin);
     const segments = u.pathname.split("/").filter(Boolean);
-    const slug = segments.pop();
-    return slug
+    if (segments.length === 0) return document.title;
+    return segments.pop()
         .split("-")
         .map(w => w.charAt(0).toUpperCase() + w.slice(1))
         .join(" ");
