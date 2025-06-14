@@ -11,6 +11,17 @@
   </h1>
 </header>
 <main>
+  {%- if section.content -%}
+    {%- set slug = page.title | default(value=section.components | last) -%}
+    {%- set pre = section.content
+      | safe
+      | replace(from="/" ~ slug ~ "/", to="/")
+      | replace(from="./", to="")
+      | lower
+    -%}
+    {{ pre | markdown | safe }}
+  {%- endif -%}
+
   {%- if section.subsections | length > 0 -%}
   <section>
     <h2>{{ config.extra.categories | default(value="categories") }}</h2>
