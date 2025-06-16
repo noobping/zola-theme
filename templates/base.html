@@ -56,18 +56,8 @@
                 
             } else console.warn('Periodic background sync not supported.');
         }
-        window.addEventListener('appinstalled', () => {
-            console.log('App installed! Now registering periodic sync…');
-            setupPeriodicSync();
-        });
-        window.addEventListener('load', async () => {
-            const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
-            if (isStandalone && !localStorage.getItem('pwa-setup-done')) {
-                localStorage.setItem('pwa-setup-done', '1');
-                console.log('Running one-time PWA setup for standalone mode…');
-                setupPeriodicSync();
-            }
-        });
+        window.addEventListener('appinstalled', () => Notification.permission == 'default' && setupPeriodicSync());
+        window.addEventListener('load', async () => (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true) && Notification.permission == 'default' && setupPeriodicSync());
     </script>
     {%- endif -%}
 </head>
