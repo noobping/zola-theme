@@ -25,7 +25,7 @@ self.addEventListener('install', event => {
             .filter(Boolean);
 
         if (failed.length) {
-            console.error('Could not cache:', failed);
+            console.warn('Could not cache:', failed);
         } else {
             console.log(`Cached ${urls.length} pages`);
         }
@@ -45,10 +45,33 @@ self.addEventListener('activate', event => {
 });
 
 self.addEventListener('fetch', event => {
-    if (event.request.method !== 'GET') return;
-    event.respondWith(
-        caches.match(event.request).then(cached =>
-            cached || fetch(event.request)
-        )
-    );
+    const url = event.request.url;
+    if (event.request.method === 'GET' && /\.(webp|avif|png|jpe?g|gif|svg)$/.test(url)) {
+        event.respondWith((async () => {
+            const cache = await caches.open('images');
+            const cached = await cache.match(event.request);
+            if (cached) return cached;
+
+            try {
+                const networkRes = await fetch(event.request);
+                // only cache 200-OK responses
+                if (networkRes.ok) {
+                    cache.put(event.request, networkRes.clone());
+                }
+                return networkRes;
+            } catch (err) {
+                console.warn('Failed to fetch image:', event.request.url, err);
+                return new Response('Image not found', { status: 404 });
+            }
+        })());
+        return;
+    }
+
+    if (event.request.method === 'GET') {
+        event.respondWith(
+            caches.match(event.request).then(cached =>
+                cached || fetch(event.request)
+            )
+        );
+    }
 });
