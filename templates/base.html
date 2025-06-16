@@ -38,12 +38,36 @@
     <meta name="mobile-web-app-title" content="{{ config.title }}" />
     <link rel="manifest" href="{{ get_url(path="manifest.json") }}">
     <script>
-        if ('serviceWorker' in navigator) {
-        navigator.serviceWorker
+        if ('serviceWorker' in navigator) navigator.serviceWorker
             .register("{{ get_url(path='service-worker.js', trailing_slash=false) }}")
             .then(reg => console.log('SW registered:', reg.scope))
             .catch(err => console.error('SW failed:', err));
+        async function setupPeriodicSync() {
+            if ('Notification' in window && Notification.permission !== 'granted') await Notification.requestPermission();
+            const reg = await navigator.serviceWorker.ready;
+            if ('periodicSync' in reg) {
+                const status = await navigator.permissions.query({ name: 'periodic-background-sync' });
+                if (status.state === 'granted') {
+                    await reg.periodicSync.register('check-latest-poem', {
+                        minInterval: 60 * 60 * 1000  // once per hour
+                    });
+                    console.log('Periodic sync set up.');
+                } else console.warn('Periodic background sync permission:', status.state);
+                
+            } else console.warn('Periodic background sync not supported.');
         }
+        window.addEventListener('appinstalled', () => {
+            console.log('App installed! Now registering periodic sync…');
+            setupPeriodicSync();
+        });
+        window.addEventListener('load', async () => {
+            const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+            if (isStandalone && !localStorage.getItem('pwa-setup-done')) {
+                localStorage.setItem('pwa-setup-done', '1');
+                console.log('Running one-time PWA setup for standalone mode…');
+                setupPeriodicSync();
+            }
+        });
     </script>
     {%- endif -%}
 </head>
