@@ -40,7 +40,7 @@
     <script>
         if ('serviceWorker' in navigator) {
         navigator.serviceWorker
-            .register("{{ get_url(path='js/service-worker.js', trailing_slash=false) }}")
+            .register("{{ get_url(path='service-worker.js', trailing_slash=false) }}")
             .then(reg => console.log('SW registered:', reg.scope))
             .catch(err => console.error('SW failed:', err));
         }
