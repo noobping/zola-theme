@@ -1,10 +1,8 @@
 const CACHE_NAME = 'site-v1';
-const OFFLINE_URL = 'index.html'; 
 
 self.addEventListener('install', event => {
     event.waitUntil((async () => {
         const cache = await caches.open(CACHE_NAME);
-        await cache.add(new Request(OFFLINE_URL, { cache: 'reload' }));
         const res = await fetch('sitemap.xml');
         if (!res.ok) throw new Error('Failed to fetch sitemap.xml, status ' + res.status);
 
@@ -47,22 +45,33 @@ self.addEventListener('activate', event => {
 });
 
 self.addEventListener('fetch', event => {
-    const url = event.request.url;
-    if (event.request.method === 'GET' && /\.(webp|avif|png|jpe?g|gif|svg)$/.test(url)) {
+    const url = new URL(event.request.url);
+
+    if (event.request.mode === 'navigate') {
         event.respondWith((async () => {
-            const cache = await caches.open('images');
+            try {
+                const netResp = await fetch(event.request);
+                const cache = await caches.open(CACHE_NAME);
+                cache.put(event.request, netResp.clone());
+                return netResp;
+            } catch (err) {
+                return caches.match(OFFLINE_URL);
+            }
+        })());
+        return;
+    }
+
+    if (event.request.method === 'GET' && /\.(webp|avif|png|jpe?g|gif|svg)$/.test(url.pathname)) {
+        event.respondWith((async () => {
+            const cache = await caches.open(CACHE_NAME);
             const cached = await cache.match(event.request);
             if (cached) return cached;
-
             try {
-                const networkRes = await fetch(event.request);
-                // only cache 200-OK responses
-                if (networkRes.ok) {
-                    cache.put(event.request, networkRes.clone());
-                }
-                return networkRes;
-            } catch (err) {
-                console.warn('Failed to fetch image:', event.request.url, err);
+                const netResp = await fetch(event.request);
+                if (netResp.ok) cache.put(event.request, netResp.clone());
+                return netResp;
+            } catch {
+                console.error('Failed to fetch image:', event.request.url, err);
                 return new Response('Image not found', { status: 404 });
             }
         })());
