@@ -1,8 +1,10 @@
 const CACHE_NAME = 'site-v1';
+const OFFLINE_URL = 'index.html'; 
 
 self.addEventListener('install', event => {
     event.waitUntil((async () => {
         const cache = await caches.open(CACHE_NAME);
+        await cache.add(new Request(OFFLINE_URL, { cache: 'reload' }));
         const res = await fetch('sitemap.xml');
         if (!res.ok) throw new Error('Failed to fetch sitemap.xml, status ' + res.status);
 
