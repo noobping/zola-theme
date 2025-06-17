@@ -3,7 +3,7 @@ const CACHE_NAME = 'site-v1';
 self.addEventListener('install', event => {
     event.waitUntil((async () => {
         const cache = await caches.open(CACHE_NAME);
-        const res = await fetch('sitemap.xml');
+        const res = await fetch(self.origin + '/sitemap.xml');
         if (!res.ok) throw new Error('Failed to fetch sitemap.xml, status ' + res.status);
 
         const xmlText = await res.text();
