@@ -3,7 +3,7 @@ const CACHE_NAME = 'site-v1';
 self.addEventListener('install', event => {
     event.waitUntil((async () => {
         const cache = await caches.open(CACHE_NAME);
-        let urls = ['/', '/index.html', '/sitemap.xml', '/css/styles.css', '/service-worker.js', '/js/share.js'];
+        let urls = ['/', '/index.html', '/css/styles.css', '/service-worker.js', '/js/share.js'];
 
         try {
             const res = await fetch('/sitemap.xml', { mode: 'same-origin' });
@@ -50,7 +50,7 @@ self.addEventListener('fetch', event => {
                 return networkResponse;
             } catch (err) {
                 console.error('Fetch failed; returning offline page instead.', err);
-                return caches.match(OFFLINE_URL);
+                return caches.match('/index.html');
             }
         })());
         return;
