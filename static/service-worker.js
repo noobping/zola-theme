@@ -47,20 +47,41 @@ self.addEventListener('activate', evt => {
     );
 });
 
-self.addEventListener('fetch', evt => {
+self.addEventListener('fetch', event => {
     const { request } = evt;
-    if (request.method !== 'GET') return;
+    if (event.request.method !== 'GET') return;
 
-    if (request.destination === 'image') {
+    if (event.request.destination === 'image') {
         evt.respondWith(cacheFirst(request, RUNTIME));
         return;
     }
 
-    evt.respondWith(
-        caches.match(request)
-            .then(hit => hit || fetch(request))
-            .catch(() => caches.match('/offline.html'))
-    );
+    event.respondWith((async () => {
+        const cache = await caches.open(PRECACHE);
+
+        let cached = await cache.match(event.request, { ignoreSearch: true });
+        if (cached) return cached;
+
+        const url = new URL(event.request.url);
+        if (!url.pathname.endsWith('/')) {
+            cached = await cache.match(url.pathname + '/', { ignoreSearch: true })
+                || await cache.match(url.pathname + '/index.html', { ignoreSearch: true });
+            if (cached) return cached;
+        }
+
+        try {
+            const net = await fetch(event.request);
+            if (net.ok) return net;
+        } catch (_) {
+            console.warn(`Could not fetch ${event.request.url}`);
+        }
+
+        cached = await cache.match('/offline.html');
+        return cached || new Response(
+            '<h1>Offline</h1><p>Please reconnect and refresh.</p>',
+            { status: 503, headers: { 'Content-Type': 'text/html' } }
+        );
+    })());
 });
 
 async function cacheFirst(request, cacheName) {
