@@ -7,7 +7,7 @@ self.addEventListener('install', event => {
             const xml = await fetch('/sitemap.xml').then(r => r.text());
             const urls = [...xml.matchAll(/<loc>(.*?)<\/loc>/g)]
                 .map(m => new URL(m[1]).pathname.replace(/\/?$/, '/'));
-            urls.push('/index.html', '/css/style.css', '/favicon.ico');
+            urls.push('/index.html', '/css/style.css', '/favicon.ico', '/sitemap.xml');
             await cache.addAll(urls);
             self.skipWaiting();
         })()
