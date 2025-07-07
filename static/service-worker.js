@@ -37,16 +37,19 @@ self.addEventListener('activate', event => {
 
 self.addEventListener('fetch', event => {
     const url = new URL(event.request.url);
-
     if (event.request.mode === 'navigate') {
         event.respondWith((async () => {
+            const cache = await caches.open(CACHE_NAME);
+            const cachedResponse = await cache.match(event.request);
+            if (cachedResponse) return cachedResponse;
             try {
-                const netResp = await fetch(event.request);
-                const cache = await caches.open(CACHE_NAME);
-                cache.put(event.request, netResp.clone());
-                return netResp;
+                const networkResponse = await fetch(event.request);
+                if (networkResponse.ok) {
+                    cache.put(event.request, networkResponse.clone());
+                }
+                return networkResponse;
             } catch (err) {
-                console.error('Network request failed:', event.request.url, err);
+                console.error('Fetch failed; returning offline page instead.', err);
                 return caches.match(OFFLINE_URL);
             }
         })());
@@ -56,14 +59,15 @@ self.addEventListener('fetch', event => {
     if (event.request.method === 'GET' && /\.(webp|avif|png|jpe?g|gif|svg)$/.test(url.pathname)) {
         event.respondWith((async () => {
             const cache = await caches.open(CACHE_NAME);
-            const cached = await cache.match(event.request);
-            if (cached) return cached;
+            const cachedImage = await cache.match(event.request);
+            if (cachedImage) return cachedImage;
             try {
-                const netResp = await fetch(event.request);
-                if (netResp.ok) cache.put(event.request, netResp.clone());
-                return netResp;
-            } catch (err) {
-                console.error('Failed to fetch image:', event.request.url, err);
+                const resp = await fetch(event.request);
+                if (resp.ok) {
+                    cache.put(event.request, resp.clone());
+                }
+                return resp;
+            } catch {
                 return new Response('Image not found', { status: 404 });
             }
         })());
@@ -72,12 +76,9 @@ self.addEventListener('fetch', event => {
 
     if (event.request.method === 'GET') {
         event.respondWith(
-            caches.match(event.request).then(cached =>
-                cached || fetch(event.request).catch(() => {
-                    console.error('Fetch failed:', event.request.url);
-                    return new Response('Not found', { status: 404 });
-                })
-            )
+            caches.match(event.request)
+                .then(cached => cached || fetch(event.request))
+                .catch(() => new Response('Not found', { status: 404 }))
         );
     }
 });
