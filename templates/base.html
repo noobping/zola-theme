@@ -3,13 +3,13 @@
 <!DOCTYPE html>
 
 {%- if config.extra.language -%}
-    <html lang="{{ config.extra.language }}">
+<html lang="{{ config.extra.language }}">
 {%- else -%}
-    {%- if config.default_language -%}
-        <html lang="{{ config.default_language }}">
-    {%- else -%}
-        <html lang="en">
-    {%- endif -%}
+{%- if config.default_language -%}
+<html lang="{{ config.default_language }}">
+{%- else -%}
+<html lang="en">
+{%- endif -%}
 {%- endif -%}
 
 <head>
@@ -27,7 +27,8 @@
     {%- endif -%}
 
     {% block rss %}
-    <link rel="alternate" type="application/atom+xml" title="{{ config.title }}" href="{{ get_url(path='atom.xml', trailing_slash=false) }}">
+    <link rel="alternate" type="application/atom+xml" title="{{ config.title }}"
+        href="{{ get_url(path='atom.xml', trailing_slash=false) }}">
     {% endblock %}
 
     {%- if config.extra.webapp -%}
@@ -53,7 +54,7 @@
                     });
                     console.log('Periodic sync set up.');
                 } else console.warn('Periodic background sync permission:', status.state);
-                
+
             } else console.warn('Periodic background sync not supported.');
         }
         window.addEventListener('appinstalled', () => Notification.permission == 'default' && setupPeriodicSync());
@@ -63,6 +64,32 @@
 </head>
 
 <body>
+    {%- if config.extra.webapp -%}
+    <label id="sw-label" for="sw-progress" hidden>Downloading 0 %</label>
+    <progress id="sw-progress" value="0" max="100" hidden>0 %</progress>
+    <script>
+        const $prog = document.getElementById('sw-progress');
+        const $label = document.getElementById('sw-label');
+        if ('serviceWorker' in navigator) navigator.serviceWorker.addEventListener('message', evt => {
+                if (evt.data?.type !== 'CACHE_PROGRESS') return;
+                const { done, total } = evt.data;
+
+                const pct = Math.floor(done / total * 100);
+                console.log(`SW progress: ${done} / ${total} (${pct}%)`);
+                $prog.value = Math.max(0, Math.min(100, pct));
+                $prog.hidden = false;
+
+                $label.textContent = `Downloading ${pct} %`;
+                $label.hidden = false;
+
+                if (pct === 100) {
+                    $prog.remove();
+                    $label.remove();
+                }
+            });
+        </script>
+    {%- endif -%}
+
     {%- set comps = page.components | default(value=section.components | default(value=[])) -%}
     {{ macros::breadcrumb(path=comps) }}
 
@@ -72,4 +99,5 @@
     <script src="{{ config.base_url }}/js/share.js" defer></script>
     {%- endif -%}
 </body>
+
 </html>
