@@ -10,7 +10,7 @@ self.addEventListener('install', evt => {
         const xml = await fetch(MANIFEST).then(r => r.text());
         const urls = [...xml.matchAll(/<loc>(.*?)<\/loc>/g)].map(m => (new URL(m[1])).pathname);
 
-        urls.push('/index.html', '404.html', '/css/style.css', '/favicon.ico');
+        urls.push('/index.html', '/404.html', '/css/style.css', '/favicon.ico');
 
         const total = urls.length;
         let done = 0;
