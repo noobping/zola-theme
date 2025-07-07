@@ -10,7 +10,7 @@ self.addEventListener('install', evt => {
         const xml = await fetch(MANIFEST).then(r => r.text());
         const urls = [...xml.matchAll(/<loc>(.*?)<\/loc>/g)].map(m => (new URL(m[1])).pathname);
 
-        urls.push('/offline.html', '/css/style.css', '/favicon.ico');
+        urls.push('/index.html', '404.html', '/css/style.css', '/favicon.ico');
 
         const total = urls.length;
         let done = 0;
@@ -76,7 +76,7 @@ self.addEventListener('fetch', event => {
             console.warn(`Could not fetch ${event.request.url}`);
         }
 
-        cached = await cache.match('/offline.html');
+        cached = await cache.match('/404.html');
         return cached || new Response(
             '<h1>Offline</h1><p>Please reconnect and refresh.</p>',
             { status: 503, headers: { 'Content-Type': 'text/html' } }
