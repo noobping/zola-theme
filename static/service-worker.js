@@ -3,7 +3,7 @@ const CACHE_NAME = 'site-v1';
 self.addEventListener('install', event => {
     event.waitUntil((async () => {
         const cache = await caches.open(CACHE_NAME);
-        const res = await fetch(self.origin + '/sitemap.xml');
+        const res = await fetch(location.origin + '/sitemap.xml');
         if (!res.ok) throw new Error('Failed to fetch sitemap.xml, status ' + res.status);
 
         const xmlText = await res.text();
@@ -15,9 +15,8 @@ self.addEventListener('install', event => {
         }
         console.log(`Found ${urls.length} URLs in sitemap.xml`);
 
-        // cache all, but don’t let one 404 break everything:
         const results = await Promise.allSettled(
-            urls.map(u => cache.add(new Request(u, { mode: 'same-origin' })))
+            urls.map(u => cache.add(new Request(u, { mode: 'same-origin', credentials: 'include' })))
         );
 
         const failed = results
@@ -55,6 +54,7 @@ self.addEventListener('fetch', event => {
                 cache.put(event.request, netResp.clone());
                 return netResp;
             } catch (err) {
+                console.error('Network request failed:', event.request.url, err);
                 return caches.match(OFFLINE_URL);
             }
         })());
@@ -70,7 +70,7 @@ self.addEventListener('fetch', event => {
                 const netResp = await fetch(event.request);
                 if (netResp.ok) cache.put(event.request, netResp.clone());
                 return netResp;
-            } catch {
+            } catch (err) {
                 console.error('Failed to fetch image:', event.request.url, err);
                 return new Response('Image not found', { status: 404 });
             }
