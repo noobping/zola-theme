@@ -51,7 +51,7 @@ self.addEventListener('fetch', event => {
     if (event.request.method !== 'GET') return;
 
     if (event.request.destination === 'image') {
-        event.respondWith(cacheFirst(request, RUNTIME));
+        event.respondWith(cacheFirst(event.request, RUNTIME));
         return;
     }
 
