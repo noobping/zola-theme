@@ -3,32 +3,24 @@ const CACHE_NAME = 'site-v1';
 self.addEventListener('install', event => {
     event.waitUntil((async () => {
         const cache = await caches.open(CACHE_NAME);
-        const res = await fetch(location.origin + '/sitemap.xml');
-        if (!res.ok) throw new Error('Failed to fetch sitemap.xml, status ' + res.status);
+        let urls = ['/', '/index.html', '/css/styles.css', '/service-worker.js', '/js/share.js'];
 
-        const xmlText = await res.text();
-        const urls = [];
-        const locRe = /<loc>([^<]+)<\/loc>/g;
-        let match;
-        while ((match = locRe.exec(xmlText)) !== null) {
-            urls.push(match[1].trim().replace(/ /g, '%20'));
+        try {
+            const res = await fetch('/sitemap.xml', { mode: 'same-origin' });
+            if (!res.ok) throw new Error('status ' + res.status);
+            const xml = await res.text();
+            const locRe = /<loc>([^<]+)<\/loc>/g;
+            urls = [];
+            let m;
+            while ((m = locRe.exec(xml))) urls.push(m[1].trim());
+            console.log(`Caching ${urls.length} pages from sitemap`);
+        } catch (err) {
+            console.warn('Could not fetch sitemap, using default assets:', err);
         }
-        console.log(`Found ${urls.length} URLs in sitemap.xml`);
 
-        const results = await Promise.allSettled(
-            urls.map(u => cache.add(new Request(u, { mode: 'same-origin', credentials: 'include' })))
+        await Promise.allSettled(
+            urls.map(u => cache.add(new Request(u, { mode: 'same-origin' })))
         );
-
-        const failed = results
-            .map((r, i) => r.status === 'rejected' ? urls[i] : null)
-            .filter(Boolean);
-
-        if (failed.length) {
-            console.warn('Could not cache:', failed);
-        } else {
-            console.log(`Cached ${urls.length} pages`);
-        }
-
         await self.skipWaiting();
     })());
 });
@@ -81,7 +73,10 @@ self.addEventListener('fetch', event => {
     if (event.request.method === 'GET') {
         event.respondWith(
             caches.match(event.request).then(cached =>
-                cached || fetch(event.request)
+                cached || fetch(event.request).catch(() => {
+                    console.error('Fetch failed:', event.request.url);
+                    return new Response('Not found', { status: 404 });
+                })
             )
         );
     }
