@@ -6,12 +6,12 @@ self.addEventListener('install', evt => {
     self.skipWaiting();
     evt.waitUntil((async () => {
         const cache = await caches.open(PRECACHE);
-
         const xml = await fetch(MANIFEST).then(r => r.text());
         const urls = [...xml.matchAll(/<loc>(.*?)<\/loc>/g)].map(m => (new URL(m[1])).pathname);
-
-        urls.push('/index.html', '/404.html', '/css/style.css', '/favicon.ico');
-
+        urls.push(
+            '/index.html', '/404.html', '/css/style.css', '/favicon.ico',
+            '/manifest.json', '/js/share.js', '/js/search-query.js', '/js/search-results.js'
+        );
         const total = urls.length;
         let done = 0;
 
