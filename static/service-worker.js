@@ -7,8 +7,10 @@ self.addEventListener('install', event => {
             const xml = await fetch('/sitemap.xml').then(r => r.text());
             const urls = [...xml.matchAll(/<loc>(.*?)<\/loc>/g)]
                 .map(m => new URL(m[1]).pathname.replace(/\/?$/, '/'));
-            urls.push('/index.html', '/css/style.css', '/favicon.ico', '/sitemap.xml');
-            await cache.addAll(urls);
+            urls.push('/index.html', '/css/style.css', '/favicon.ico', '/sitemap.xml', '/404.html');
+            await Promise.allSettled(
+                urls.map(u => cache.add(new Request(u, { mode: 'same-origin' })))
+            );
             self.skipWaiting();
         })()
     );
@@ -23,10 +25,14 @@ self.addEventListener('activate', event => {
 });
 
 self.addEventListener('fetch', event => {
-    if (event.request.method !== 'GET') { return; }
-    event.respondWith(
-        caches.match(event.request)
-            .then(res => res || fetch(event.request))
-            .catch(() => caches.match('/index.html'))
-    );
+    if (event.event.request.method !== 'GET') return;
+    event.respondWith(async () => {
+        const cache = await caches.open(CACHE);
+        const cached = await cache.match(event.request);
+        if (cached) return cached;
+
+        const response = await fetch(event.request).catch(() => caches.match('/404.html'));
+        if (response.ok) cache.put(event.request, response.clone());
+        return response;
+    });
 });
