@@ -48,7 +48,6 @@ self.addEventListener('activate', evt => {
 });
 
 self.addEventListener('fetch', event => {
-    const { request } = evt;
     if (event.request.method !== 'GET') return;
 
     if (event.request.destination === 'image') {
