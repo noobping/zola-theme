@@ -8,6 +8,17 @@ self.addEventListener('install', evt => {
         const cache = await caches.open(PRECACHE);
         const xml = await fetch(MANIFEST).then(r => r.text());
         const urls = [...xml.matchAll(/<loc>(.*?)<\/loc>/g)].map(m => (new URL(m[1])).pathname);
+
+        const cfgCache = await caches.open('config-cache');
+        let configuration = {};
+        try {
+            const resp = await cfgCache.match('configuration');
+            configuration = resp ? await resp.json() : {};
+        } catch (e) {
+            console.warn('Could not read config cache, using {}', e);
+        }
+
+        if (configuration.search) urls.push('/' + configuration.search);
         urls.push(
             '/index.html', '/404.html', '/css/style.css', '/favicon.ico',
             '/manifest.json', '/js/share.js', '/js/search-query.js', '/js/search-results.js'
@@ -30,7 +41,7 @@ self.addEventListener('install', evt => {
                 const resp = await fetch(url, { mode: 'no-cors' });
                 await cache.put(url, resp);
             } catch (err) {
-                console.warn(`⚠️  Could not cache ${url}`, err);
+                console.warn(`Could not cache ${url}`, err);
             }
             reportProgress(++done, total);
         }
