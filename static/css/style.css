@@ -42,6 +42,31 @@ body {
     margin: auto;
 }
 
+progress {
+    accent-color: var(--primary);
+    background-color: transparent;
+    border: none;
+    color: var(--primary);
+    height: 0.5em;
+    left: 0;
+    margin: 0;
+    padding: 0;
+    position: fixed;
+    right: 0;
+    top: 0;
+    width: 100%;
+}
+
+progress::-webkit-progress-bar {
+    background-color: var(--primary-background);
+    border: none;
+}
+
+progress::-webkit-progress-value {
+    background-color: var(--primary);
+    border: none;
+}
+
 main {
     border: 1px solid var(--border);
     background-color: var(--secondary-background);
